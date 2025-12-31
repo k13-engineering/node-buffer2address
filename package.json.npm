@@ -1,0 +1,21 @@
+{
+  "name": "buffer2address",
+  "description": "Node.js module to retrieve memory address of Buffer",
+  "main": "dist/lib/index.js",
+  "files": [
+    "dist/**/*",
+    "native/**/*",
+    "binding.gyp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k13-engineering/node-buffer2address.git"
+  },
+  "keywords": [],
+  "author": "Simon Kadisch",
+  "license": "LGPL 2.1",
+  "bugs": {
+    "url": "https://github.com/k13-engineering/node-buffer2address/issues"
+  },
+  "homepage": "https://github.com/k13-engineering/node-buffer2address#readme",
+}
