@@ -19,14 +19,18 @@ yarn add buffer2address
 
 ## API
 
-### `buffer2address({ buffer })`
+### `pinBuffer({ buffer })`
 
-Retrieves the memory address of a Buffer.
+Pins a buffer in memory and retrieves its memory address. Returns an object containing the address and an unpin function.
 
 **Parameters:**
-- `buffer` (Uint8Array) - The buffer whose memory address to retrieve
+- `buffer` (Uint8Array) - The buffer to pin and retrieve the memory address from
 
-**Returns:** `bigint` - The memory address of the buffer
+**Returns:** `{ address: bigint, unpin: () => void }` - An object containing:
+  - `address` - The memory address of the pinned buffer
+  - `unpin()` - Function to unpin the buffer when no longer needed
+
+**⚠️ Important:** Always call `unpin()` when you're done using the address to prevent memory leaks. The buffer remains pinned in memory until unpinned.
 
 ### `address2buffer({ address, size })`
 
@@ -43,14 +47,17 @@ Creates a Buffer view from a memory address.
 ## Example
 
 ```javascript
-import { buffer2address, address2buffer } from "buffer2address";
+import { pinBuffer, address2buffer } from "buffer2address";
 
 const buf = new Uint8Array(16);
 buf[0] = 0xAA;
 
-const address = buffer2address({ buffer: buf });
+const { address, unpin } = pinBuffer({ buffer: buf });
 console.log(`buffer address = ${address}`);
 
 const buf2 = address2buffer({ address, size: buf.length });
 console.log(`buffer =`, buf2);
+
+// Always unpin when done
+unpin();
 ```
