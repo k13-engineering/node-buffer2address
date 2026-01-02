@@ -52,12 +52,11 @@ import { pinBuffer, address2buffer } from "buffer2address";
 const buf = new Uint8Array(16);
 buf[0] = 0xAA;
 
-const { address, unpin } = pinBuffer({ buffer: buf });
-console.log(`buffer address = ${address}`);
+const pinnedBuffer = pinBuffer({ buffer: buf });
+console.log(`buffer address = ${pinnedBuffer.address}`);
 
-const buf2 = address2buffer({ address, size: buf.length });
+const buf2 = address2buffer({ address: pinnedBuffer.address, size: buf.length });
 console.log(`buffer =`, buf2);
 
-// Always unpin when done
-unpin();
+pinnedBuffer.unpin();
 ```
