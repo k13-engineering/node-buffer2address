@@ -2,7 +2,17 @@
 /* global it */
 
 import assert from "assert";
-import { pinBuffer, address2buffer } from "../lib/index.ts";
+import {
+  pinBuffer,
+  address2buffer,
+  PinnedBufferGarbageCollectedWithoutUnpinError
+} from "../lib/index.ts";
+import type {
+  TPinnedBuffer,
+  TPinnedBufferInfo
+} from "../lib/index.ts";
+import { captureUncaughtExceptionsDuring, forceGarbageCollection } from "./util.ts";
+import { formatPointerAddress } from "../lib/util.ts";
 
 describe("buffer2address", () => {
   it("should provide address of buffer as BigInt", () => {
@@ -68,6 +78,52 @@ describe("buffer2address", () => {
     });
 
     pinnedBuffer2.unpin();
+  });
+
+  describe("memory leak detection", () => {
+    it("should throw exception when buffer is garbage collected without unmap", async function () {
+      this.timeout(5000);
+
+      const buffer = new Uint8Array(64);
+      let pinnedBuffer: TPinnedBuffer | undefined = pinBuffer({ buffer });
+
+      const bufferInfo: TPinnedBufferInfo = {
+        pinId: pinnedBuffer.pinId,
+        address: pinnedBuffer.address
+      };
+
+      const capturedUncaughtExceptions = await captureUncaughtExceptionsDuring(async ({ uncaughtExceptions }) => {
+        // remove reference to buffer to allow garbage collection
+        pinnedBuffer = undefined;
+
+        const startedAt = performance.now();
+
+        while (performance.now() - startedAt < 3000) {
+          forceGarbageCollection();
+          await new Promise((resolve) => setTimeout(resolve, 20));
+
+          const exceptions = uncaughtExceptions();
+          if (exceptions.length > 0) {
+            return;
+          }
+        }
+      });
+
+      // mainly for linter
+      assert.strictEqual(pinnedBuffer, undefined, "pinnedBuffer should be undefined");
+
+      assert.strictEqual(capturedUncaughtExceptions.length, 1);
+
+      const ex = capturedUncaughtExceptions[0];
+      assert.ok(ex instanceof PinnedBufferGarbageCollectedWithoutUnpinError);
+      assert.strictEqual(ex.bufferInfo.pinId, bufferInfo.pinId);
+      assert.strictEqual(ex.bufferInfo.address, bufferInfo.address);
+
+      const formattedPointerAddress = formatPointerAddress({ pointerAddress: bufferInfo.address });
+
+      assert.ok(ex.message.includes(`pinId=${bufferInfo.pinId}`));
+      assert.ok(ex.message.includes(formattedPointerAddress));
+    });
   });
 });
 
