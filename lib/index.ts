@@ -1,6 +1,6 @@
 import { nativeBuffer2address, nativeAddress2buffer } from "./native.ts";
 import nodeAssert from "node:assert";
-import { formatPointerAddress } from "./util.ts";
+import { formatPointer } from "./snippets/format-pointer.ts";
 
 let pinnedBuffers: Uint8Array[] = [];
 
@@ -21,7 +21,7 @@ class PinnedBufferGarbageCollectedWithoutUnpinError extends Error {
 
   constructor ({ bufferInfo }: { bufferInfo: TPinnedBufferInfo }) {
     let message = `pinned buffer with pinId=${bufferInfo.pinId} at`;
-    message += ` address 0x${formatPointerAddress({ pointerAddress: bufferInfo.address })}`;
+    message += ` address ${formatPointer({ pointerAddress: bufferInfo.address })}`;
     message += ` was garbage collected without calling unmap().`;
     message += ` This would causes a memory leak -`;
     message += ` therefore this raises an uncaught exception.`;

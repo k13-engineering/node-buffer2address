@@ -12,7 +12,7 @@ import type {
   TPinnedBufferInfo
 } from "../lib/index.ts";
 import { captureUncaughtExceptionsDuring, forceGarbageCollection } from "./util.ts";
-import { formatPointerAddress } from "../lib/util.ts";
+import { formatPointer } from "../lib/snippets/format-pointer.ts";
 
 describe("buffer2address", () => {
   it("should provide address of buffer as BigInt", () => {
@@ -119,7 +119,7 @@ describe("buffer2address", () => {
       assert.strictEqual(ex.bufferInfo.pinId, bufferInfo.pinId);
       assert.strictEqual(ex.bufferInfo.address, bufferInfo.address);
 
-      const formattedPointerAddress = formatPointerAddress({ pointerAddress: bufferInfo.address });
+      const formattedPointerAddress = formatPointer({ pointerAddress: bufferInfo.address });
 
       assert.ok(ex.message.includes(`pinId=${bufferInfo.pinId}`));
       assert.ok(ex.message.includes(formattedPointerAddress));
