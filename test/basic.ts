@@ -41,6 +41,34 @@ describe("buffer2address", () => {
       return true;
     });
   });
+
+  it("should be able to pin the same buffer multiple times", () => {
+    const buffer = Buffer.alloc(16);
+    const pinnedBuffer1 = pinBuffer({ buffer });
+    const pinnedBuffer2 = pinBuffer({ buffer });
+
+    assert.strictEqual(pinnedBuffer1.address, pinnedBuffer2.address);
+
+    pinnedBuffer1.unpin();
+    pinnedBuffer2.unpin();
+  });
+
+  it("should throw an error when unpinning twice even when pinning the same buffer multiple times", () => {
+    const buffer = Buffer.alloc(16);
+    const pinnedBuffer1 = pinBuffer({ buffer });
+    const pinnedBuffer2 = pinBuffer({ buffer });
+
+    pinnedBuffer1.unpin();
+
+    assert.throws(() => {
+      pinnedBuffer1.unpin();
+    }, (err: Error) => {
+      assert.equal(err.message, "buffer already unpinned");
+      return true;
+    });
+
+    pinnedBuffer2.unpin();
+  });
 });
 
 describe("address2buffer", () => {
