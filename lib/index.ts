@@ -82,7 +82,7 @@ const pinBuffer = ({ buffer }: { buffer: Uint8Array }): TPinnedBuffer => {
   return pinnedBuffer;
 };
 
-const address2buffer = ({ address, size }: { address: bigint, size: number }) => {
+const address2buffer = ({ address, size }: { address: bigint, size: number }): Uint8Array => {
   return nativeAddress2buffer(address, BigInt(size));
 };
 
