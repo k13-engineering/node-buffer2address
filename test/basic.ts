@@ -6,11 +6,11 @@ import {
   pinBuffer,
   address2buffer,
   PinnedBufferGarbageCollectedWithoutUnpinError
-} from "../lib/index.ts";
+} from "../dist/lib/index.js";
 import type {
   TPinnedBuffer,
   TPinnedBufferInfo
-} from "../lib/index.ts";
+} from "../dist/lib/index.js";
 import { captureUncaughtExceptionsDuring, forceGarbageCollection } from "./util.ts";
 import { formatPointer } from "../lib/snippets/format-pointer.ts";
 
