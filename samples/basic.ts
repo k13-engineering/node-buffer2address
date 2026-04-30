@@ -1,6 +1,7 @@
 import { pinBuffer, address2buffer } from "../lib/index.ts";
 
 const buf = new Uint8Array(16);
+// eslint-disable-next-line immutable/no-mutation
 buf[0] = 0xAA;
 
 const pinnedBuffer = pinBuffer({ buffer: buf });

@@ -16,7 +16,7 @@ import { formatPointer } from "../lib/snippets/format-pointer.ts";
 
 describe("buffer2address", () => {
   it("should provide address of buffer as BigInt", () => {
-    const buffer = Buffer.alloc(32);
+    const buffer = new Uint8Array(32);
 
     const pinnedBuffer = pinBuffer({ buffer });
     assert.equal(typeof pinnedBuffer.address, "bigint");
@@ -30,7 +30,7 @@ describe("buffer2address", () => {
 
   // it("should throw an error when more than 1 argument is given", () => {
   //   // @ts-expect-error testing too many arguments
-  //   assert.throws(() => buffer2address(Buffer.alloc(8), Buffer.alloc(8)));
+  //   assert.throws(() => buffer2address(new Uint8Array(8), new Uint8Array(8)));
   // });
 
   // it("should throw an error when wrong argument type is given", () => {
@@ -39,7 +39,7 @@ describe("buffer2address", () => {
   // });
 
   it("should throw an error when unpinning twice", () => {
-    const buffer = Buffer.alloc(16);
+    const buffer = new Uint8Array(16);
     const pinnedBuffer = pinBuffer({ buffer });
 
     pinnedBuffer.unpin();
@@ -53,7 +53,7 @@ describe("buffer2address", () => {
   });
 
   it("should be able to pin the same buffer multiple times", () => {
-    const buffer = Buffer.alloc(16);
+    const buffer = new Uint8Array(16);
     const pinnedBuffer1 = pinBuffer({ buffer });
     const pinnedBuffer2 = pinBuffer({ buffer });
 
@@ -64,7 +64,7 @@ describe("buffer2address", () => {
   });
 
   it("should throw an error when unpinning twice even when pinning the same buffer multiple times", () => {
-    const buffer = Buffer.alloc(16);
+    const buffer = new Uint8Array(16);
     const pinnedBuffer1 = pinBuffer({ buffer });
     const pinnedBuffer2 = pinBuffer({ buffer });
 
@@ -81,7 +81,9 @@ describe("buffer2address", () => {
   });
 
   describe("memory leak detection", () => {
+    // eslint-disable-next-line no-restricted-syntax
     it("should throw exception when buffer is garbage collected without unmap", async function () {
+      // eslint-disable-next-line fp/no-this
       this.timeout(5000);
 
       const buffer = new Uint8Array(64);
@@ -100,7 +102,9 @@ describe("buffer2address", () => {
 
         while (performance.now() - startedAt < 3000) {
           forceGarbageCollection();
-          await new Promise((resolve) => setTimeout(resolve, 20));
+          await new Promise((resolve) => {
+            setTimeout(resolve, 20);
+          });
 
           const exceptions = uncaughtExceptions();
           if (exceptions.length > 0) {
@@ -114,7 +118,7 @@ describe("buffer2address", () => {
 
       assert.strictEqual(capturedUncaughtExceptions.length, 1);
 
-      const ex = capturedUncaughtExceptions[0];
+      const ex = capturedUncaughtExceptions[0] as PinnedBufferGarbageCollectedWithoutUnpinError;
       assert.ok(ex instanceof PinnedBufferGarbageCollectedWithoutUnpinError);
       assert.strictEqual(ex.bufferInfo.pinId, bufferInfo.pinId);
       assert.strictEqual(ex.bufferInfo.address, bufferInfo.address);
@@ -138,6 +142,7 @@ describe("address2buffer", () => {
     const testValues = [0x22, 0x33, 0x44];
 
     testValues.forEach((value) => {
+      // eslint-disable-next-line immutable/no-mutation
       buf[0] = value;
       assert.equal(newBuf[0], value);
     });
@@ -162,16 +167,18 @@ describe("address2buffer", () => {
   // });
 
   it("should fail on too large addresses", () => {
-    // @ts-expect-error testing too large address
-    assert.throws(() => address2buffer({ address: 0x1000000000000000000n, size: 0x10000n }), (err: Error) => {
+    assert.throws(() => {
+      address2buffer({ address: 0x1000000000000000000n, size: 0x10000 });
+    }, (err: Error) => {
       assert.equal(err.message, "address must not exceed UINTPTR_MAX");
       return true;
     });
   });
 
   it("should fail on too large sizes", () => {
-    // @ts-expect-error testing too large length
-    assert.throws(() => address2buffer({ address: 0x10000n, size: 0x1000000000000000000n }), (err: Error) => {
+    assert.throws(() => {
+      address2buffer({ address: 0x10000n, size: 0x1000000000000000000 });
+    }, (err: Error) => {
       assert.equal(err.message, "length must not exceed UINTPTR_MAX");
       return true;
     });

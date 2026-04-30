@@ -15,10 +15,12 @@ type TPinnedBuffer = {
   unpin: () => void;
 };
 
+// eslint-disable-next-line fp/no-class
 class PinnedBufferGarbageCollectedWithoutUnpinError extends Error {
 
   public bufferInfo: TPinnedBufferInfo;
 
+  // eslint-disable-next-line no-restricted-syntax
   constructor ({ bufferInfo }: { bufferInfo: TPinnedBufferInfo }) {
     let message = `pinned buffer with pinId=${bufferInfo.pinId} at`;
     message += ` address ${formatPointer({ pointerAddress: bufferInfo.address })}`;
@@ -29,13 +31,17 @@ class PinnedBufferGarbageCollectedWithoutUnpinError extends Error {
 
     super(message);
 
+    // eslint-disable-next-line immutable/no-mutation, fp/no-this
     this.bufferInfo = bufferInfo;
+    // eslint-disable-next-line immutable/no-mutation, fp/no-this
     this.name = "PinnedBufferGarbageCollectedWithoutUnpinError";
   }
 };
 
+// eslint-disable-next-line k13-engineering/no-new
 const pinnedBuffersFinalizationRegistry = new FinalizationRegistry((bufferInfo: TPinnedBufferInfo) => {
   // this callback is called when a buffer pinning instance is garbage collected without unpin() being called
+  // eslint-disable-next-line k13-engineering/no-new
   throw new PinnedBufferGarbageCollectedWithoutUnpinError({ bufferInfo });
 });
 
@@ -49,7 +55,7 @@ const pinBuffer = ({ buffer }: { buffer: Uint8Array }): TPinnedBuffer => {
   const unpin = () => {
 
     if (!pinned) {
-      throw new Error("buffer already unpinned");
+      throw Error("buffer already unpinned");
     }
     pinned = false;
 
@@ -57,6 +63,7 @@ const pinBuffer = ({ buffer }: { buffer: Uint8Array }): TPinnedBuffer => {
     const pinnedIndex = pinnedBuffers.indexOf(buffer);
     nodeAssert.ok(pinnedIndex >= 0, "buffer should be in pinned buffers, this is a bug");
 
+    // eslint-disable-next-line fp/no-mutating-methods
     pinnedBuffers.splice(pinnedIndex, 1);
     pinnedBuffersFinalizationRegistry.unregister(buffer);
   };
