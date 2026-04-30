@@ -1,7 +1,7 @@
-import { loadAddonFromMemory } from "./load-addon-from-memory.ts";
 import { buffer2addressAddonArm64 } from "./generated/buffer2address-arm64.ts";
 import { buffer2addressAddonX64 } from "./generated/buffer2address-x64.ts";
 import nodeProcess from "node:process";
+import { createDefaultAddonLoader } from "@k13engineering/addon-loader";
 
 type TBuffer2AddressAddon = {
   buffer2address: (buffer: Uint8Array) => bigint;
@@ -12,6 +12,8 @@ const addonBinariesByArch: Partial<{ [key in NodeJS.Architecture]: Uint8Array }>
   x64: buffer2addressAddonX64,
   arm64: buffer2addressAddonArm64,
 };
+
+const addonLoader = createDefaultAddonLoader();
 
 let loadedAddon: TBuffer2AddressAddon | undefined = undefined;
 
@@ -30,7 +32,7 @@ const maybeLoadAddon = (): TBuffer2AddressAddon => {
     throw Error(`unsupported architecture: ${nodeProcess.arch}`);
   }
 
-  const { error, addon } = loadAddonFromMemory({ addonAsBuffer: addonBinary });
+  const { error, addon } = addonLoader.loadAddonFromMemory({ addonAsBuffer: addonBinary });
   if (error !== undefined) {
     throw Error(`failed to load native addon from memory: ${error.message}`);
   }
